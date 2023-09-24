@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "project": {
+            "type": "string",
+            "metadata": {
+                "description": "Project Name"
+            }
+        },
+        "env": {
+            "type": "string",
+            "metadata": {
+                "description": "Environment"
+            }
+        },
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource Group Location"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "storageAccountName": "[concat(parameters('project'),parameters('env'),'storage')]",
+        "containerName": "[concat(parameters('project'),'-',parameters('env'),'-engineering')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "name": "[variables('storageAccountName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "BlobStorage",
+            "properties": {
+                "accessTier": "Hot"
+            },
+            "resources": [
+                {
+                    "type": "blobServices/containers",
+                    "apiVersion": "2021-02-01",
+                    "name": "[concat('default/',variables('containerName'))]",
+                    "properties": {
+                        "publicAccess": "container"
+                    },
+                    "dependsOn": [
+                        "[variables('storageAccountName')]"
+                    ]
+                }
+            ]
+        }
+    ],
+    "outputs": {}
+}

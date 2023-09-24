@@ -1,0 +1,267 @@
+{
+    //"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource Group Name"
+            }
+        },
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource Group Location"
+            }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource Group Location"
+            }
+        },
+        "project": {
+            "type": "string",
+            "metadata": {
+                "description": "Project Name"
+            }
+        },
+        "env": {
+            "type": "string",
+            "metadata": {
+                "description": "Environment"
+            }
+        },
+        "vnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Vnet Name"
+            }
+        },
+        "vnetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "Address prefix"
+            }
+        },
+        "subnet1Name": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "subnet2Name": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+          "subnet3Name": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+          "subnet4Name": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        
+        "subnet1Prefix": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "subnet2Prefix": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+
+        "subnet3Prefix": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+
+        "subnet4Prefix": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "globalResourceGroupName": "[concat(parameters('project'),'-',parameters('env'),'-rg')]",
+        "globalStorageName": "[concat(parameters('project'),parameters('env'),'storage')]",
+        "globalVnetName": "[concat(parameters('project'),'-',parameters('env'),'-network')]",
+        "globalSubnetName": "[concat(parameters('project'),'-',parameters('env'),'-subnet1')]",
+        "globalSubnetName2": "[concat(parameters('project'),'-',parameters('env'),'-subnet2')]",
+        "globalSubnetName3": "[concat(parameters('project'),'-',parameters('env'),'-subnet3')]",
+        "globalSubnetName4": "[concat(parameters('project'),'-',parameters('env'),'-subnet4')]",
+        "globalContainerName": "[concat(parameters('project'),'-',parameters('env'),'-engineering')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2020-10-01",
+            "name": "[variables('globalResourceGroupName')]",
+            "location": "[parameters('location')]",
+            "properties": {}
+        },
+        // Nested Storage Deployment
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "name": "storageDeployment",
+            "resourceGroup": "[variables('globalResourceGroupName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups/', variables('globalResourceGroupName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "apiVersion": "2019-06-01",
+                            "name": "[variables('globalStorageName')]",
+                            "location": "[parameters('location')]",
+                            "sku": {
+                                "name": "Standard_LRS",
+                                "tier": "Standard"
+                            },
+                            "kind": "BlobStorage",
+                            "properties": {
+                                "accessTier": "Hot"
+                            },
+                            "resources": [
+                                {
+                                    "type": "blobServices/containers",
+                                    "apiVersion": "2021-02-01",
+                                    "name": "[concat('default/',variables('globalContainerName'))]",
+                                    "properties": {
+                                        "publicAccess": "container"
+                                    },
+                                    "dependsOn": [
+                                        "[variables('globalStorageName')]"
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "outputs": {}
+                }
+            }
+        },
+        // Nested VNet + Subnet Deployment
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "name": "vnetDeployment",
+            "resourceGroup": "[variables('globalResourceGroupName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups/', variables('globalResourceGroupName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "apiVersion": "2020-05-01",
+                            "name": "[variables('globalVnetName')]",
+                            "location": "[parameters('location')]",
+                            "properties": {
+                                "addressSpace": {
+                                    "addressPrefixes": [
+                                        "[parameters('vnetAddressPrefix')]"
+                                    ]
+                                }
+                            },
+                            "resources": [
+                                {
+                                    "type": "subnets",
+                                    "apiVersion": "2020-05-01",
+                                    "location": "[parameters('location')]",
+                                    // "name": "[concat(parameters('project'),'-',parameters('env'),'-subnet1')]",
+                                    "name": "[variables('globalSubnetName')]",
+                                    "dependsOn": [
+                                        "[variables('globalVnetName')]"
+
+
+                                    ],
+                                    "properties": {
+                                        "addressPrefix": "[parameters('subnet1Prefix')]"
+                                    }
+                                },
+                                {
+                                    "type": "subnets",
+                                    "apiVersion": "2020-05-01",
+                                    "location": "[parameters('location')]",
+                                    "name": "[variables('globalSubnetName2')]",
+                                    "dependsOn": [
+                                         "[variables('globalVnetName')]",
+                                        "[variables('globalSubnetName')]"
+
+
+                                    ],
+                                    "properties": {
+                                        "addressPrefix": "[parameters('subnet2Prefix')]"
+                                    }
+                                },
+                                {
+                                    "type": "subnets",
+                                    "apiVersion": "2020-05-01",
+                                    "location": "[parameters('location')]",
+                                    "name": "[variables('globalSubnetName3')]",
+                                    "dependsOn": [
+                                        "[variables('globalVnetName')]",
+                                        "[variables('globalSubnetName2')]"
+
+
+                                    ],
+                                    "properties": {
+                                        "addressPrefix": "[parameters('subnet3Prefix')]"
+                                    }
+                                },
+                                {
+                                    "type": "subnets",
+                                    "apiVersion": "2020-05-01",
+                                    "location": "[parameters('location')]",
+                                    "name": "[variables('globalSubnetName4')]",
+                                    "dependsOn": [
+                                        "[variables('globalVnetName')]",
+                                        "[variables('globalSubnetName3')]"
+
+
+                                    ],
+                                    "properties": {
+                                        "addressPrefix": "[parameters('subnet4Prefix')]"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

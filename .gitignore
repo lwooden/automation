@@ -1,0 +1,7 @@
+.DS_Store
+Azure/Bicep/ALZ-Bicep
+Azure/Terraform/dhs_missionlz
+Azure/Terraform/dhs_azurelandingzone
+Azure/Terraform/policy
+Azure/Terraform/local_dhs_azurelandingzone
+Azure/Terraform/managementGroups

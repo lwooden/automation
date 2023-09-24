@@ -1,0 +1,221 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+   vpcIdParameter:
+     Type: AWS::EC2::VPC::Id
+     Description: Define the VPC you want the Security Groups to be created in
+
+
+Resources:
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: ALB-SG
+      GroupDescription: Security Group for Application Load Balancer
+      VpcId:
+        Ref: vpcIdParameter
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+          
+  WebAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: Web-Access-SG
+      GroupDescription: Allow HTTP/HTTPS
+      VpcId:
+        Ref: vpcIdParameter
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+          
+  PingSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: Ping-SG
+      GroupDescription: Allow ICMP for connectivity test
+      VpcId:
+        Ref: vpcIdParameter
+      SecurityGroupIngress:
+        - IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+          
+  BastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: Bastion-SG
+      GroupDescription: Bastion-SG
+      VpcId:
+        Ref: vpcIdParameter
+      SecurityGroupIngress:
+        - IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+          
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: Database-SG
+      GroupDescription: Database-SG
+      VpcId:
+        Ref: vpcIdParameter
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+
+  DatabaseSecurityGroupInbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+        -  ApplicationSecurityGroup
+        -  GroupId
+      GroupId:
+        Fn::GetAtt:
+        -  DatabaseSecurityGroup
+        -  GroupId
+        
+  ApplicationSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: App-SG
+      GroupDescription: App-SG
+      VpcId:
+        Ref: vpcIdParameter
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+          
+  AppSecurityGroupInbound1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+        -  DatabaseSecurityGroup
+        -  GroupId
+      GroupId:
+        Fn::GetAtt:
+        -  ApplicationSecurityGroup
+        -  GroupId
+        
+  AppSecurityGroupInbound2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+        -  WebSecurityGroup
+        -  GroupId
+      GroupId:
+        Fn::GetAtt:
+        -  ApplicationSecurityGroup
+        -  GroupId
+        
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: Web-SG
+      GroupDescription: Web-SG
+      VpcId:
+        Ref: vpcIdParameter
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0	 
+
+  WebSecurityGroupInbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+        -  ApplicationSecurityGroup
+        -  GroupId
+      GroupId:
+        Fn::GetAtt:
+        -  WebSecurityGroup
+        -  GroupId
+
+  WebSecurityGroupInbound2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+        -  ALBSecurityGroup
+        -  GroupId
+      GroupId:
+        Fn::GetAtt:
+        -  WebSecurityGroup
+        -  GroupId
+
+          
+  TestSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: Test-SG
+      GroupDescription: Security Group used for testing
+      VpcId:
+        Ref: vpcIdParameter
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0

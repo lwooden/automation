@@ -1,0 +1,116 @@
+
+
+// Reference resource group created in createResourceGroup.json
+// az deployment group create --resource-group lowsandbox-dev-rg --template-file createNetwork.json 
+// if resource group already exists, azure will deploy into it instead of attempting to recreate
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "project": {
+            "type": "string",
+            "metadata": {
+                "description": "Project Name"
+            }
+        },
+        "env": {
+            "type": "string",
+            "metadata": {
+                "description": "Environment"
+            }
+        },
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource Group Location"
+            }
+        },
+        "vnetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "Address prefix"
+            }
+        },
+        "subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.1.0/24",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "subnet2Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.2.0/24",
+            "metadata": {
+                "description": "description"
+            }
+        },
+
+        "subnet3Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.3.0/24",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "subnet4Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.4.0/24",
+            "metadata": {
+                "description": "description"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "resourceGroupName": "[concat(parameters('project'),'-',parameters('env'),'-rg')]",
+        "vnetName": "[concat(parameters('project'),'-',parameters('env'),'-network')]",
+        "subnetName1": "[concat(parameters('project'),'-',parameters('env'),'-subnet1')]",
+        "subnetName2": "[concat(parameters('project'),'-',parameters('env'),'-subnet2')]",
+        "subnetName3": "[concat(parameters('project'),'-',parameters('env'),'-subnet3')]",
+        "subnetName4": "[concat(parameters('project'),'-',parameters('env'),'-subnet4')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "name": "[variables('vnetName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnetAddressPrefix')]"
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "type": "subnets",
+                    "apiVersion": "2020-05-01",
+                    "location": "[parameters('location')]",
+                    "name": "[variables('subnetName1')]",
+                    "dependsOn": [
+                        "[variables('vnetName')]"
+                    ],
+                    "properties": {
+                        "addressPrefix": "[parameters('subnet1Prefix')]"
+                    }
+                },
+                {
+                    "type": "subnets",
+                    "apiVersion": "2020-05-01",
+                    "location": "[parameters('location')]",
+                    "name": "[variables('subnetName2')]",
+                    "dependsOn": [
+                        "[variables('vnetName')]",
+                        "[variables('subnetName1')]"
+                    ],
+                    "properties": {
+                        "addressPrefix": "[parameters('subnet2Prefix')]"
+                    }
+                }
+            ]
+        }
+    ]
+}

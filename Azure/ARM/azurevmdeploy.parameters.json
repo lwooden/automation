@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmName": {
+            "value": "lowazvmdeploy"
+        },
+        "storageAccountName": {
+            "value": "lowazstoragedeploy"
+        },
+        "subnetId": {
+            "value": "/subscriptions/75866a76-8dd2-4040-b9b4-e633d039f290/resourceGroups/Low-Playground/providers/Microsoft.Network/virtualNetworks/Development-Network/subnets/Public"
+        },
+        "adminUser": {
+            "value": "lwooden"
+        },
+        "adminPass": {
+            "value": "Sheldonave43"
+        }
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceGroupName": {
+            "value": "Low-ARM-RG"
+        },
+        "location": {
+            "value": "eastus"
+        },
+        "vnetName": {
+            "value": "RAM-Network"
+        },
+        "storageAccountName": {
+            "value": "cloud123456"
+        },
+        "project": {
+            "value": "coreservices"
+        },
+        "env": {
+            "value": "dev"
+        },
+        "vnetAddressPrefix": {
+            "value": "10.0.0.0/16"
+        },
+        "subnet1Name": {
+            "value": "RAM-Network"
+        },
+        "subnet1Prefix": {
+            "value": "10.0.1.0/24"
+        },
+        "subnet2Prefix": {
+            "value": "10.0.2.0/24"
+        },
+        "subnet3Prefix": {
+            "value": "10.0.3.0/24"
+        },
+        "subnet4Prefix": {
+            "value": "10.0.4.0/24"
+        }
+    }
+}
