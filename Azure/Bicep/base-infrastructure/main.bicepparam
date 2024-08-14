@@ -26,7 +26,8 @@ param logAnalyticsWorkspaceSku = 'PerGB2018'
 param retentionInDays = 30
 
 param vaultStorageRedundancy = 'LocallyRedundant'
-
 param vaultSkuName = 'RS0'
 param vaultSkuTier =  'Standard'
+
+
 

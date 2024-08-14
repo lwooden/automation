@@ -1,11 +1,16 @@
 targetScope='subscription'
 
+
+
 // ---- Foundational infrastructure for every subscription -----
 // VNET + Subnets + Route Tables + Routes + Custom DNS Servers ✅ 
 // Storage Account w/ Container ✅
 // Budget w/ Action Group ✅
 // Log Analytics Workspace ✅
 // Recovery Services Vault ✅
+
+// How to Deploy this Bicep File - Subscription Target
+// az deployment sub create --location eastus --template-file main.bicep --parameters main.bicepparam
 
 // Parameters
 // NOTE: Actual values are set and passed in from the project parameter file --> main.bicepparam
@@ -63,6 +68,7 @@ resource baseResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   location: location
 }
 
+
 //TODO: remove this
 // resource budgetResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' = {
 //   name: 'budget-rg'
@@ -70,21 +76,21 @@ resource baseResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' = {
 // }
 
 
-module baseVirtualNetwork 'vnet.bicep' = {
-  name: 'vnetModule'
-  scope: baseResourceGroup
-  params: {
-    location: location
-    projectName: projectName
-    environment: environment
-    vnetCidr: vnetCidr
-    privateSubnet1Cidr: privateSubnet1Cidr
-    privateSubnet2Cidr: privateSubnet2Cidr
-    publicSubnet1Cidr: publicSubnet1Cidr
-    publicSubnet2Cidr: publicSubnet2Cidr
-    natGatewayName: '${projectName}-${environment}-nat-gateway'
-  }
-}
+// module baseVirtualNetwork 'vnet.bicep' = {
+//   name: 'vnetModule'
+//   scope: baseResourceGroup
+//   params: {
+//     location: location
+//     projectName: projectName
+//     environment: environment
+//     vnetCidr: vnetCidr
+//     privateSubnet1Cidr: privateSubnet1Cidr
+//     privateSubnet2Cidr: privateSubnet2Cidr
+//     publicSubnet1Cidr: publicSubnet1Cidr
+//     publicSubnet2Cidr: publicSubnet2Cidr
+//     natGatewayName: '${projectName}-${environment}-nat-gateway'
+//   }
+// }
 
 
 module  baseStorageAccount 'storageaccount.bicep' = {
@@ -97,16 +103,16 @@ module  baseStorageAccount 'storageaccount.bicep' = {
   } 
 }
 
-module  baseLogAnalysticsWorkspace 'loganalytics.bicep' = {
-  name: 'logAnalyticsModule'
-  scope: baseResourceGroup
-  params: {
-    location: location
-    logAnalyticsWorkspaceName: '${projectName}-${environment}-workspace'
-    logAnalyticsWorkspaceSku: logAnalyticsWorkspaceSku
-    retentionInDays: retentionInDays
-  } 
-}
+// module  baseLogAnalysticsWorkspace 'loganalytics.bicep' = {
+//   name: 'logAnalyticsModule'
+//   scope: baseResourceGroup
+//   params: {
+//     location: location
+//     logAnalyticsWorkspaceName: '${projectName}-${environment}-workspace'
+//     logAnalyticsWorkspaceSku: logAnalyticsWorkspaceSku
+//     retentionInDays: retentionInDays
+//   } 
+// }
 
 // module  baseRecoveryServicesVault 'recoveryservicesvault.bicep' = {
 //   name: 'recoveryServicesVaultModule'
@@ -123,40 +129,50 @@ module  baseLogAnalysticsWorkspace 'loganalytics.bicep' = {
 
 // Budget -- Subscripton Level Deployment
 // TODO: integrate notifications w/ action groups versus basic contact email list
-resource budget 'Microsoft.CostManagement/budgets@2019-04-01-preview' = {
-  name: '${projectName}-${environment}-budget'
-  scope: subscription()
-  properties: {
-    amount: allocatedFundAmount
-    category: 'Cost'
-    filter: {}
-    notifications: {
-      Exceeded50PercentofBudget: {
-        enabled: true
-        operator: 'GreaterThan'
-        threshold: 50
-        contactEmails: budgetContactEmails
-      }
-      Exceeded75PercentofBudget: {
-        enabled: true
-        operator: 'GreaterThan'
-        threshold: 75
-        contactEmails: budgetContactEmails
-      }
-      Exceeded90PercentofBudget: {
-        enabled: true
-        operator: 'GreaterThan'
-        threshold: 90
-        contactEmails: budgetContactEmails
-      }
-    }
-    timeGrain: 'Annually'
-    timePeriod: {
-      endDate: budgetEndDate
-      startDate: budgetStartDate
-  }
- }
+// resource baseBudget 'Microsoft.CostManagement/budgets@2019-04-01-preview' = {
+//   name: '${projectName}-${environment}-budget'
+//   scope: subscription()
+//   properties: {
+//     amount: allocatedFundAmount
+//     category: 'Cost'
+//     filter: {}
+//     notifications: {
+//       Exceeded50PercentofBudget: {
+//         enabled: true
+//         operator: 'GreaterThan'
+//         threshold: 50
+//         contactEmails: budgetContactEmails
+//       }
+//       Exceeded75PercentofBudget: {
+//         enabled: true
+//         operator: 'GreaterThan'
+//         threshold: 75
+//         contactEmails: budgetContactEmails
+//       }
+//       Exceeded90PercentofBudget: {
+//         enabled: true
+//         operator: 'GreaterThan'
+//         threshold: 90
+//         contactEmails: budgetContactEmails
+//       }
+//     }
+//     timeGrain: 'Annually'
+//     timePeriod: {
+//       endDate: budgetEndDate
+//       startDate: budgetStartDate
+//   }
+//  }
+// }
+
+module  baseProgramEntraIDGroups 'programgroups.bicep' = {
+  name: 'groupsModule'
+  scope: baseResourceGroup
+  params: {
+    projectName: projectName
+  } 
 }
+
+
 
 
 
